@@ -191,6 +191,151 @@ funcionam via JavaScript, esse trecho específico precisa ser colado direto
 no HTML — o `index.html` já tem um comentário marcando exatamente onde,
 logo depois da tag `<body>`.
 
+## Aviso sobre o contador de escassez
+
+A página tem um contador "N discount codes left today" perto do botão do
+formulário (`#scarcityCount` em `index.html`). **Esse número é fictício** —
+não está ligado a nenhum estoque real de cupons. Vai de **86 a 31**,
+diminuindo aos poucos ao longo da semana e resetando toda segunda-feira às
+00:00 (horário de Londres) — em vez de resetar todo dia, pra parecer mais
+gradual e não dar um salto brusco pra quem visita mais de uma vez no mesmo
+dia. Ajuste `STOCK_START`/`STOCK_FLOOR` no `index.html` se quiser outra
+faixa de números.
+
+Isso foi implementado a pedido explícito, mas veja o risco antes de rodar
+tráfego pago pra essa página:
+
+- No Reino Unido, as **Consumer Protection from Unfair Trading Regulations
+  2008** (Schedule 1, item 7) listam "afirmar falsamente que um produto só
+  estará disponível em quantidade/tempo muito limitado para forçar uma
+  decisão imediata" como prática **automaticamente desleal** — não depende
+  de provar prejuízo ao consumidor, é fiscalizável pela Trading
+  Standards/CMA por definição.
+- A política de **Misrepresentation** do Google Ads proíbe explicitamente
+  "false urgency" (urgência falsa) em anúncios e landing pages.
+- Isso vai na direção contrária do que foi ajustado na página pra evitar
+  que ela pareça um golpe/produto falso (ver seção acima) — um contador de
+  estoque falso é um dos sinais clássicos desse padrão.
+
+Se quiser reduzir o risco depois, dá pra trocar por uma versão real: ligar
+`STOCK_START` a um limite diário que você realmente respeita (ex: parar de
+enviar o código depois de N leads no dia, puxando a contagem real de
+cadastros do Klaviyo), em vez de um número calculado só pela hora.
+
+## Integração completa com a Klaviyo (captação + rastreamento)
+
+Além do script de rastreamento onsite (em `snippets/head-code.js`) e do
+envio do formulário pra API de subscription da Klaviyo (que é o que
+efetivamente cadastra o lead com consentimento — já implementado desde o
+início), o `index.html` agora também chama, assim que alguém envia o
+formulário com sucesso (em qualquer uma das 3 plataformas de e-mail
+configuradas, não só quando o `provider` é `'klaviyo'`):
+
+```js
+klaviyo.identify({
+  email: '...',
+  first_name: '...',
+  last_name: '...'
+});
+klaviyo.track('Submitted Lead Form', {
+  gclid: '...', utm_source: '...', utm_medium: '...', utm_campaign: '...'
+});
+```
+
+Isso segue o padrão recomendado pela própria Klaviyo pra integrações sem
+app pronto ([guia de integração
+customizada](https://developers.klaviyo.com/en/docs/guide_to_integrating_a_platform_without_a_pre_built_klaviyo_integration),
+[JavaScript API](https://developers.klaviyo.com/en/docs/javascript_api)):
+
+- **`klaviyo.identify(...)`** liga a sessão de navegação anônima
+  (rastreada pelo script onsite desde que a pessoa entrou na página) ao
+  perfil real dela — sem isso, o comportamento de navegação antes do
+  cadastro fica "solto", associado só a um cookie anônimo, mais difícil de
+  cruzar com o perfil depois.
+- **`klaviyo.track('Submitted Lead Form', ...)`** registra um evento
+  específico (separado da assinatura em si) que você pode usar em flows,
+  segmentos e relatórios da Klaviyo — e já vai com `gclid`/UTMs, então dá
+  pra criar segmentos por origem de campanha direto na Klaviyo.
+- Isso é só rastreamento/enriquecimento de perfil — quem garante o
+  consentimento de marketing continua sendo a chamada de subscription que
+  já existia (`a.klaviyo.com/client/subscriptions`), não o `identify`.
+
+Não precisa configurar nada a mais pra isso funcionar — já está ativo
+automaticamente sempre que o script da Klaviyo estiver carregado (via
+`snippets/head-code.js`), com uma checagem (`typeof klaviyo === 'undefined'`)
+que evita erro caso você troque de plataforma de rastreamento no futuro.
+
+## Rastreamento de lead e compra para o Google Ads
+
+Como o modelo é cupom/redirecionamento (a compra acontece no site do
+varejista, não aqui), existem dois eventos diferentes pra rastrear — e o
+segundo é bem mais difícil que o primeiro.
+
+### 1. Evento de lead (cadastro no formulário) — já implementado
+
+Toda vez que alguém envia o formulário com sucesso — em qualquer uma das 3
+plataformas de e-mail —, o `index.html` já dispara isto automaticamente:
+
+```js
+window.dataLayer.push({
+  event: 'lead_form_submit',
+  lead_email: '...'
+});
+```
+
+Pra transformar isso numa conversão do Google Ads, o caminho mais simples
+é via **Google Tag Manager** (que você já pode instalar em
+`snippets/head-code.js`, como descrito acima):
+
+1. No GTM, crie um **Trigger** do tipo "Custom Event" com nome do evento
+   `lead_form_submit`.
+2. Crie uma **Tag** do tipo "Google Ads Conversion Tracking", com o
+   Conversion ID/Label da sua conta do Google Ads, usando esse trigger.
+3. Publique o container do GTM.
+
+Isso já basta pra otimizar campanhas do Google Ads pelo cadastro do lead.
+
+### 2. Evento de compra (acontece no site do varejista) — mais complexo
+
+Como a TOOLVO não processa a venda, não existe um "obrigado pela compra"
+nesta página pra disparar um evento — a confirmação da compra só existe no
+site do varejista, fora do seu controle. As opções realistas, da mais
+simples pra mais completa:
+
+**Opção A — Enhanced Conversions for Leads (recomendado pra esse modelo):**
+No Google Ads, ative "Enhanced conversions for leads" na configuração da
+sua ação de conversão. Quando você descobrir (via relatório do programa de
+afiliados/varejista) que um lead específico comprou, você sobe uma linha
+com o **e-mail dele** (com hash SHA-256, ou o Google Ads faz isso por você
+na hora do upload) e a data/valor da compra, pela tela "Conversions >
+Uploads" do Google Ads. O Google casa esse e-mail com o clique original
+usando os próprios sinais deles — não depende de você ter guardado o
+`gclid`.
+
+**Opção B — Offline Conversion Import por `gclid`:** o `index.html` já
+captura o `gclid` da URL (quando o Google Ads adiciona esse parâmetro
+automaticamente ao link do anúncio) e envia como propriedade do perfil no
+Klaviyo, junto com `utm_source`/`utm_medium`/`utm_campaign`. Assim, cada
+lead na Klaviyo fica com o `gclid` daquele clique salvo. Quando souber quem
+comprou, você sobe uma linha com esse `gclid` + data/hora + valor da compra
+na mesma tela "Conversions > Uploads" do Google Ads.
+
+**O elo que falta em ambas as opções — saber quem comprou de verdade:**
+isso depende do que o varejista/programa de afiliados te dá de volta. Se
+o programa de afiliados suportar um parâmetro de rastreamento próprio
+(chamado de SubID, ClickID, ou similar, dependendo da rede — Awin, CJ
+Affiliate, Impact, Amazon Associates, etc.), inclua o e-mail (ou um ID
+único do lead) nesse parâmetro ao montar o link que você manda por e-mail
+— assim o relatório de vendas da rede já vem com essa referência, e você
+só precisa cruzar com o que salvou na Klaviyo antes de subir pro Google
+Ads. Sem isso, a única forma de saber quem comprou é manualmente, cliente
+a cliente.
+
+Se isso for complexo demais pra começar, a prática mais comum em negócios
+como esse é **otimizar o Google Ads só pelo evento de lead** (Opção 1
+acima) e acompanhar a taxa de conversão lead → venda por fora, sem tentar
+automatizar 100% o evento de compra desde o primeiro dia.
+
 ## Rodar localmente
 
 Não precisa de servidor nem instalação — é só abrir o `index.html` no

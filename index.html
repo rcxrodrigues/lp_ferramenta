@@ -6,9 +6,7 @@
 <title>Exclusive UK Offer — Stanley 20V Cordless Drill Kit</title>
 <meta name="description" content="Register your details to unlock an exclusive UK offer on the Stanley 20V Cordless Drill Kit. Takes less than 4 minutes.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
-<link rel="preconnect" href="https://api.fontshare.com">
-<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
-<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+<!-- Sistema de fontes tradicional (Arial/Helvetica) — sem web font externa, sem "cara de IA" -->
 <style>
   :root{
     --ink:#000000;
@@ -29,7 +27,7 @@
     margin:0;
     background:var(--paper);
     color:var(--ink);
-    font-family:'General Sans',system-ui,-apple-system,sans-serif;
+    font-family:Arial,Helvetica,'Helvetica Neue',sans-serif;
     font-size:16px;
     line-height:1.5;
     -webkit-font-smoothing:antialiased;
@@ -51,7 +49,7 @@
   }
   .brand span{color:var(--orange);}
   .topbar-note{
-    font-size:0.8rem;font-weight:600;color:#D9D9D9;
+    font-size:0.8rem;font-weight:700;color:#D9D9D9;
   }
   @media (max-width:560px){ .topbar-note{display:none;} }
 
@@ -59,7 +57,7 @@
   .hero{padding:44px 0 56px;}
   .badge{
     display:inline-flex;align-items:center;gap:6px;
-    font-weight:600;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    font-weight:700;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
     background:var(--mist);color:var(--ink);
     padding:7px 14px;border-radius:999px;border:1px solid var(--line);
   }
@@ -135,12 +133,20 @@
 
   .consent{display:flex;gap:10px;align-items:flex-start;margin:16px 0 20px;}
   .consent input{margin-top:3px;flex:none;}
+
+  .scarcity-note{
+    display:flex;align-items:center;gap:8px;
+    font-size:0.85rem;font-weight:700;color:var(--orange-dark);
+    background:#FFF3EA;border:1px solid rgba(226,85,0,0.25);
+    border-radius:8px;padding:9px 12px;margin-bottom:14px;
+  }
+  .scarcity-note svg{width:16px;height:16px;flex:none;}
   .consent label{font-size:0.79rem;color:var(--ink-soft);line-height:1.5;}
   .consent a{text-decoration:underline;color:var(--ink);}
 
   .btn{
     display:inline-flex;align-items:center;justify-content:center;gap:10px;
-    font-weight:600;font-size:1.02rem;
+    font-weight:700;font-size:1.02rem;
     padding:17px 28px;border-radius:8px;border:none;cursor:pointer;
     text-decoration:none;width:100%;
     background:var(--orange);color:#fff;
@@ -158,7 +164,7 @@
   .hp-field{position:absolute;left:-9999px;top:-9999px;}
   .form-msg{
     display:none;margin-top:14px;padding:12px 14px;border-radius:8px;
-    font-size:0.88rem;font-weight:600;
+    font-size:0.88rem;font-weight:700;
   }
   .form-msg.success{display:block;background:#E9F5EC;color:var(--green);}
   .form-msg.error{display:block;background:#FBEAE8;color:#C6281E;}
@@ -166,7 +172,7 @@
   .trust-row{
     margin-top:26px;padding-top:22px;border-top:1px solid var(--line);
     display:flex;flex-wrap:wrap;gap:18px 26px;
-    font-size:0.84rem;color:var(--ink-soft);font-weight:600;
+    font-size:0.84rem;color:var(--ink-soft);font-weight:700;
   }
   .trust-row .item{display:flex;align-items:center;gap:7px;}
   .trust-row svg{width:16px;height:16px;flex:none;color:var(--orange);}
@@ -178,7 +184,7 @@
 
   /* ---------- footer ---------- */
   footer{border-top:1px solid var(--line);padding:24px 0 32px;background:var(--mist);}
-  footer .wrap{display:flex;flex-direction:column;gap:10px;}
+  footer .wrap{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
   .disclaimer{font-size:0.76rem;color:var(--ink-soft);max-width:80ch;line-height:1.6;}
   .disclaimer a{text-decoration:underline;color:var(--ink);}
   .copyright{font-size:0.76rem;color:var(--ink-soft);}
@@ -255,6 +261,14 @@
           <label for="consent">I'd like to receive my exclusive discount code and future marketing emails from TOOLVO. I can unsubscribe at any time. See our <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> and <a href="terms.html" target="_blank" rel="noopener">Terms</a>.</label>
         </div>
 
+        <!-- Scarcity note: fictional/simulated count, not tied to a real stock number.
+             See README.md, section "Aviso sobre o contador de escassez" for the legal
+             context (UK CPUT Regs 2008 + Google Ads policy) before touching this. -->
+        <div class="scarcity-note" id="scarcityNote">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 11-14h-7l1-6Z"/></svg>
+          <span id="scarcityCount">—</span> discount codes left today
+        </div>
+
         <button type="submit" class="btn" id="leadSubmitBtn">Send Me My Discount Code</button>
 
         <div class="form-micro">
@@ -300,6 +314,10 @@
       msgSuccess.style.display = 'none';
       msgError.style.display = 'none';
       el.style.display = 'block';
+      if (el === msgSuccess){
+        fireLeadConversionEvent();
+        identifyAndTrackInKlaviyo();
+      }
     }
 
     function buildHiddenInput(name, value){
@@ -308,6 +326,53 @@
       input.name = name;
       input.value = value;
       return input;
+    }
+
+    // Google Ads / GTM conversion hook — see README.md "Rastreamento de
+    // lead e compra para o Google Ads" for how to wire this up to an
+    // actual conversion tag (via GTM custom event trigger, or gtag.js
+    // directly in snippets/head-code.js).
+    function fireLeadConversionEvent(){
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'lead_form_submit',
+        lead_email: document.getElementById('email').value.trim()
+      });
+    }
+
+    // Captures gclid/UTM params from the URL so they can be stored on the
+    // Klaviyo profile and matched back to a Google Ads click later, for
+    // offline/enhanced conversion imports once you know who purchased.
+    function getUrlParam(name){
+      return new URLSearchParams(window.location.search).get(name) || '';
+    }
+    const trackingParams = {
+      gclid: getUrlParam('gclid'),
+      utm_source: getUrlParam('utm_source'),
+      utm_medium: getUrlParam('utm_medium'),
+      utm_campaign: getUrlParam('utm_campaign')
+    };
+
+    // Ties the anonymous onsite tracking session (from the Klaviyo tag in
+    // snippets/head-code.js) to the real profile once we know who they
+    // are, and logs a distinct event for flows/segments/reporting. This is
+    // separate from the subscribe API call below, which is what actually
+    // handles marketing consent — identify()/track() here are just for
+    // richer onsite behavioural tracking. See README.md, "Integração
+    // completa com a Klaviyo (captação + rastreamento)".
+    function identifyAndTrackInKlaviyo(){
+      if (typeof klaviyo === 'undefined') return;
+      klaviyo.identify({
+        email: document.getElementById('email').value.trim(),
+        first_name: document.getElementById('firstName').value.trim(),
+        last_name: document.getElementById('lastName').value.trim()
+      });
+      klaviyo.track('Submitted Lead Form', {
+        gclid: trackingParams.gclid,
+        utm_source: trackingParams.utm_source,
+        utm_medium: trackingParams.utm_medium,
+        utm_campaign: trackingParams.utm_campaign
+      });
     }
 
     form.addEventListener('submit', function(e){
@@ -350,7 +415,13 @@
                     attributes: {
                       email: email,
                       first_name: firstName,
-                      last_name: lastName
+                      last_name: lastName,
+                      properties: {
+                        gclid: trackingParams.gclid,
+                        utm_source: trackingParams.utm_source,
+                        utm_medium: trackingParams.utm_medium,
+                        utm_campaign: trackingParams.utm_campaign
+                      }
                     }
                   }
                 }
@@ -422,6 +493,54 @@
       e.preventDefault();
       showMessage(msgError);
     });
+  })();
+
+  /* =========================================================================
+     "CODES LEFT TODAY" COUNTER — FICTIONAL, NOT A REAL STOCK NUMBER
+     -------------------------------------------------------------------------
+     This is a simulated scarcity indicator, not tied to any real number of
+     discount codes. It was added at the site owner's request despite being
+     flagged as a legal/policy risk in the UK (Consumer Protection from
+     Unfair Trading Regulations 2008, Schedule 1 §7 — falsely claiming
+     limited availability to rush a decision is an automatically unfair
+     practice) and under Google Ads' Misrepresentation policy (false
+     urgency). See README.md, "Aviso sobre o contador de escassez", for
+     full context before changing or reusing this.
+
+     To make it at least look consistent (same number for everyone at the
+     same time, decreasing gradually, resetting once a week on Monday
+     00:00 UK time — instead of swinging hard within a single day) rather
+     than randomly flickering per visit, it's derived from the current
+     time in the Europe/London timezone — not from a real database.
+  ========================================================================= */
+  (function(){
+    var el = document.getElementById('scarcityCount');
+    if (!el) return;
+
+    var STOCK_START = 86; // shown at the start of the week (Monday 00:00 UK)
+    var STOCK_FLOOR = 31; // shown right before the weekly reset (Sunday 23:59 UK)
+
+    function ukMinutesSinceWeekStart(){
+      var parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      }).formatToParts(new Date());
+      var map = {};
+      parts.forEach(function(p){ map[p.type] = p.value; });
+      var dateOnly = new Date(map.year + '-' + map.month + '-' + map.day + 'T00:00:00Z');
+      var weekday = dateOnly.getUTCDay(); // 0 = Sunday ... 6 = Saturday
+      var isoWeekday = weekday === 0 ? 7 : weekday; // 1 = Monday ... 7 = Sunday
+      return (isoWeekday - 1) * 1440 + parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10);
+    }
+
+    function updateCount(){
+      var ratio = ukMinutesSinceWeekStart() / (7 * 1440);
+      var count = Math.round(STOCK_START - (STOCK_START - STOCK_FLOOR) * ratio);
+      el.textContent = count;
+    }
+
+    updateCount();
+    setInterval(updateCount, 60000);
   })();
 </script>
 
