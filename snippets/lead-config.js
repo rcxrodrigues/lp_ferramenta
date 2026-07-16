@@ -34,6 +34,6 @@ const LEAD_CONFIG = {
     // Account > Settings > API Keys > Public API Key ("company_id")
     publicApiKey: 'Vy4TkF',
     // The List ID you want to subscribe people to (Lists & Segments > your list > Settings)
-    listId: 'REPLACE_ME'
+    listId: 'VbDKJi'
   }
 };
