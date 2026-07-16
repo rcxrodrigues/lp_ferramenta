@@ -195,12 +195,17 @@ logo depois da tag `<body>`.
 
 A página tem um contador "N discount codes left today" perto do botão do
 formulário (`#scarcityCount` em `index.html`). **Esse número é fictício** —
-não está ligado a nenhum estoque real de cupons. Vai de **86 a 31**,
-diminuindo aos poucos ao longo da semana e resetando toda segunda-feira às
-00:00 (horário de Londres) — em vez de resetar todo dia, pra parecer mais
-gradual e não dar um salto brusco pra quem visita mais de uma vez no mesmo
-dia. Ajuste `STOCK_START`/`STOCK_FLOOR` no `index.html` se quiser outra
-faixa de números.
+não está ligado a nenhum estoque real de cupons. Funciona em duas camadas:
+
+- Uma base "do dia" que desce devagar de **86 a 31** ao longo da semana,
+  resetando toda segunda-feira às 00:00 (horário de Londres) — é a mesma
+  para todo mundo que visitar no mesmo momento.
+- Em cima disso, toda vez que a página carrega, o número visível começa
+  12 acima dessa base e vai caindo 1 a cada 2 segundos até chegar nela,
+  onde para (não passa disso, não zera, não fica negativo).
+
+Ajuste `STOCK_START`/`STOCK_FLOOR`/`VISIBLE_BUFFER` no `index.html` se
+quiser outra faixa de números ou outra velocidade de queda.
 
 Isso foi implementado a pedido explícito, mas veja o risco antes de rodar
 tráfego pago pra essa página:

@@ -519,6 +519,7 @@
 
     var STOCK_START = 86; // shown at the start of the week (Monday 00:00 UK)
     var STOCK_FLOOR = 31; // shown right before the weekly reset (Sunday 23:59 UK)
+    var VISIBLE_BUFFER = 12; // extra ticks shown counting down on every fresh page load
 
     function ukMinutesSinceWeekStart(){
       var parts = new Intl.DateTimeFormat('en-GB', {
@@ -533,14 +534,33 @@
       return (isoWeekday - 1) * 1440 + parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10);
     }
 
-    function updateCount(){
+    function dailyBaseForNow(){
       var ratio = ukMinutesSinceWeekStart() / (7 * 1440);
-      var count = Math.round(STOCK_START - (STOCK_START - STOCK_FLOOR) * ratio);
+      return Math.round(STOCK_START - (STOCK_START - STOCK_FLOOR) * ratio);
+    }
+
+    // "dailyBase" is the slow, week-long ramp (the overall depletion
+    // story). On every fresh page load, the visible number starts
+    // VISIBLE_BUFFER above that and ticks down by 1 every 2 seconds until
+    // it reaches dailyBase, then holds there for the rest of the visit —
+    // so there's always a satisfying, consistent countdown to watch,
+    // regardless of what day of the week it is. Uses elapsed wall-clock
+    // time (not a tick counter) so it can't "catch up" with a burst of
+    // drops if the browser throttles the timer while the tab is in the
+    // background.
+    var dailyBase = dailyBaseForNow();
+    var startCount = dailyBase + VISIBLE_BUFFER;
+    var pageLoadTime = Date.now();
+    el.textContent = startCount;
+
+    function renderCount(){
+      var secondsOnPage = (Date.now() - pageLoadTime) / 1000;
+      var ticks = Math.floor(secondsOnPage / 2);
+      var count = Math.max(dailyBase, startCount - ticks);
       el.textContent = count;
     }
 
-    updateCount();
-    setInterval(updateCount, 60000);
+    setInterval(renderCount, 2000);
   })();
 </script>
 
