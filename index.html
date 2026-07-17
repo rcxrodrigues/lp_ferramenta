@@ -350,7 +350,9 @@
       gclid: getUrlParam('gclid'),
       utm_source: getUrlParam('utm_source'),
       utm_medium: getUrlParam('utm_medium'),
-      utm_campaign: getUrlParam('utm_campaign')
+      utm_campaign: getUrlParam('utm_campaign'),
+      utm_term: getUrlParam('utm_term'),
+      utm_content: getUrlParam('utm_content')
     };
 
     // Ties the anonymous onsite tracking session (from the Klaviyo tag in
@@ -365,13 +367,21 @@
       klaviyo.identify({
         email: document.getElementById('email').value.trim(),
         first_name: document.getElementById('firstName').value.trim(),
-        last_name: document.getElementById('lastName').value.trim()
+        last_name: document.getElementById('lastName').value.trim(),
+        gclid: trackingParams.gclid,
+        utm_source: trackingParams.utm_source,
+        utm_medium: trackingParams.utm_medium,
+        utm_campaign: trackingParams.utm_campaign,
+        utm_term: trackingParams.utm_term,
+        utm_content: trackingParams.utm_content
       });
       klaviyo.track('Submitted Lead Form', {
         gclid: trackingParams.gclid,
         utm_source: trackingParams.utm_source,
         utm_medium: trackingParams.utm_medium,
-        utm_campaign: trackingParams.utm_campaign
+        utm_campaign: trackingParams.utm_campaign,
+        utm_term: trackingParams.utm_term,
+        utm_content: trackingParams.utm_content
       });
     }
 
@@ -420,7 +430,9 @@
                         gclid: trackingParams.gclid,
                         utm_source: trackingParams.utm_source,
                         utm_medium: trackingParams.utm_medium,
-                        utm_campaign: trackingParams.utm_campaign
+                        utm_campaign: trackingParams.utm_campaign,
+                        utm_term: trackingParams.utm_term,
+                        utm_content: trackingParams.utm_content
                       }
                     }
                   }
