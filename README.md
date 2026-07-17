@@ -15,6 +15,8 @@ capturar o lead.
 
 ```
 index.html                     página inteira (HTML/CSS + lógica do formulário)
+thank-you.html                 página de obrigado, pra onde o formulário redireciona após sucesso
+privacy.html / terms.html      páginas legais, linkadas no formulário e rodapé
 assets/                        imagens do produto
 snippets/lead-config.js        credenciais da plataforma de e-mail (Mailchimp/ActiveCampaign/Klaviyo)
 snippets/head-code.js          códigos de rastreamento pro <head> (GTM, GA4, Meta Pixel, etc.)
@@ -306,6 +308,29 @@ Pra transformar isso numa conversão do Google Ads, o caminho mais simples
 3. Publique o container do GTM.
 
 Isso já basta pra otimizar campanhas do Google Ads pelo cadastro do lead.
+
+**Alternativa mais simples, sem precisar de GTM:** desde que existe a
+página `thank-you.html` (pra onde o formulário redireciona automaticamente
+após um cadastro com sucesso — ver seção "Página de obrigado" abaixo), dá
+pra criar a conversão do Google Ads como **"visita à página"**, apontando
+pra qualquer URL que contenha `/thank-you.html`. Só quem realmente
+completou o cadastro chega nessa página, então funciona como conversão
+sem precisar mexer em tag nenhuma — é a opção mais rápida de configurar.
+
+## Página de obrigado (thank-you.html)
+
+Depois de um cadastro com sucesso (em qualquer uma das 3 plataformas de
+e-mail), o formulário mostra a mensagem de sucesso por um instante e
+redireciona pra `thank-you.html`, preservando os parâmetros da URL (UTMs,
+`gclid`) — assim, se você configurar algo nessa página no futuro (um pixel,
+por exemplo), os dados de origem da campanha continuam disponíveis.
+
+- Tem `<meta name="robots" content="noindex">`, então não deve aparecer no
+  Google — é só uma página de confirmação, não conteúdo pra indexar.
+- Pode ser usada como a URL de conversão do Google Ads (ver seção acima).
+- Se quiser mudar o texto ou adicionar algo (ex: um vídeo, mais reforço de
+  confiança), é só editar `thank-you.html` — segue o mesmo estilo visual
+  do resto do site (Arial, cores da TOOLVO).
 
 ### 2. Evento de compra (acontece no site do varejista) — mais complexo
 

@@ -317,6 +317,11 @@
       if (el === msgSuccess){
         fireLeadConversionEvent();
         identifyAndTrackInKlaviyo();
+        // Small delay so the tracking calls above actually get sent
+        // before the browser navigates away — see thank-you.html.
+        setTimeout(function(){
+          window.location.href = 'thank-you.html' + window.location.search;
+        }, 600);
       }
     }
 
