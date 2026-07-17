@@ -197,15 +197,22 @@ A página tem um contador "N discount codes left today" perto do botão do
 formulário (`#scarcityCount` em `index.html`). **Esse número é fictício** —
 não está ligado a nenhum estoque real de cupons. Funciona em duas camadas:
 
-- Uma base "do dia" que desce devagar de **86 a 31** ao longo da semana,
-  resetando toda segunda-feira às 00:00 (horário de Londres) — é a mesma
-  para todo mundo que visitar no mesmo momento.
-- Em cima disso, toda vez que a página carrega, o número visível começa
-  12 acima dessa base e vai caindo 1 a cada 2 segundos até chegar nela,
-  onde para (não passa disso, não zera, não fica negativo).
+- Um número inicial "do dia", que desce devagar de **86 (segunda-feira) a
+  24 (domingo)** ao longo da semana, resetando toda segunda-feira às 00:00
+  (horário de Londres) — é o mesmo pra todo mundo que visitar no mesmo
+  momento.
+- A partir desse número inicial, toda vez que a página carrega, o valor
+  visível cai 1 a cada 2 segundos até chegar em **0**, onde para e fica
+  parado pelo resto da visita.
 
-Ajuste `STOCK_START`/`STOCK_FLOOR`/`VISIBLE_BUFFER` no `index.html` se
-quiser outra faixa de números ou outra velocidade de queda.
+**Atenção**: o formulário continua funcionando normalmente mesmo com "0
+discount codes left" na tela — isso foi uma decisão explícita do dono do
+site (confirmada em conversa), ciente de que fica uma contradição visível
+pra quem prestar atenção (alternativas mais consistentes seriam resetar o
+número sozinho ou desabilitar o formulário ao chegar em 0).
+
+Ajuste `STOCK_START`/`STOCK_END` no `index.html` se quiser outra faixa de
+números iniciais ou outra velocidade de queda.
 
 Isso foi implementado a pedido explícito, mas veja o risco antes de rodar
 tráfego pago pra essa página:

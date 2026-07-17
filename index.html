@@ -519,19 +519,23 @@
      urgency). See README.md, "Aviso sobre o contador de escassez", for
      full context before changing or reusing this.
 
-     To make it at least look consistent (same number for everyone at the
-     same time, decreasing gradually, resetting once a week on Monday
-     00:00 UK time — instead of swinging hard within a single day) rather
-     than randomly flickering per visit, it's derived from the current
-     time in the Europe/London timezone — not from a real database.
+     To make the starting number at least look consistent (same for
+     everyone at the same time, drifting down gradually across the week,
+     resetting Monday 00:00 UK time) rather than randomly flickering per
+     visit, it's derived from the current time in the Europe/London
+     timezone — not from a real database. From that starting point it
+     ticks down by 1 every 2 seconds and, once it hits 0, it holds there
+     for the rest of the visit — note this means the form stays fully
+     functional even while the page reads "0 discount codes left", which
+     is its own separate honesty problem on top of the legal one above.
+     Confirmed with the site owner, who accepted this too.
   ========================================================================= */
   (function(){
     var el = document.getElementById('scarcityCount');
     if (!el) return;
 
-    var STOCK_START = 86; // shown at the start of the week (Monday 00:00 UK)
-    var STOCK_FLOOR = 31; // shown right before the weekly reset (Sunday 23:59 UK)
-    var VISIBLE_BUFFER = 12; // extra ticks shown counting down on every fresh page load
+    var STOCK_START = 86; // starting number shown at the start of the week (Monday 00:00 UK)
+    var STOCK_END = 24;   // starting number shown right before the weekly reset (Sunday 23:59 UK)
 
     function ukMinutesSinceWeekStart(){
       var parts = new Intl.DateTimeFormat('en-GB', {
@@ -546,29 +550,24 @@
       return (isoWeekday - 1) * 1440 + parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10);
     }
 
-    function dailyBaseForNow(){
+    function startingCountForNow(){
       var ratio = ukMinutesSinceWeekStart() / (7 * 1440);
-      return Math.round(STOCK_START - (STOCK_START - STOCK_FLOOR) * ratio);
+      return Math.round(STOCK_START - (STOCK_START - STOCK_END) * ratio);
     }
 
-    // "dailyBase" is the slow, week-long ramp (the overall depletion
-    // story). On every fresh page load, the visible number starts
-    // VISIBLE_BUFFER above that and ticks down by 1 every 2 seconds until
-    // it reaches dailyBase, then holds there for the rest of the visit —
-    // so there's always a satisfying, consistent countdown to watch,
-    // regardless of what day of the week it is. Uses elapsed wall-clock
-    // time (not a tick counter) so it can't "catch up" with a burst of
-    // drops if the browser throttles the timer while the tab is in the
-    // background.
-    var dailyBase = dailyBaseForNow();
-    var startCount = dailyBase + VISIBLE_BUFFER;
+    // Starts at today's point on the slow weekly ramp, then ticks down by
+    // 1 every 2 seconds until it reaches 0, where it stays. Uses elapsed
+    // wall-clock time (not a tick counter) so it can't "catch up" with a
+    // burst of drops if the browser throttles the timer while the tab is
+    // in the background.
+    var startCount = startingCountForNow();
     var pageLoadTime = Date.now();
     el.textContent = startCount;
 
     function renderCount(){
       var secondsOnPage = (Date.now() - pageLoadTime) / 1000;
       var ticks = Math.floor(secondsOnPage / 2);
-      var count = Math.max(dailyBase, startCount - ticks);
+      var count = Math.max(0, startCount - ticks);
       el.textContent = count;
     }
 
