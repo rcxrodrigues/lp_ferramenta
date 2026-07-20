@@ -360,6 +360,13 @@
       utm_content: getUrlParam('utm_content')
     };
 
+    // "Tag" for leads from this specific landing page. Klaviyo doesn't
+    // have profile tags like Mailchimp — this is a custom property
+    // instead. Build a Segment in Klaviyo filtering on "source is
+    // toolvo-lp" to get an equivalent tagged group. See README.md,
+    // "Marcar leads com uma tag (source) na Klaviyo".
+    const LEAD_SOURCE = 'toolvo-lp';
+
     // Ties the anonymous onsite tracking session (from the Klaviyo tag in
     // snippets/head-code.js) to the real profile once we know who they
     // are, and logs a distinct event for flows/segments/reporting. This is
@@ -373,6 +380,7 @@
         email: document.getElementById('email').value.trim(),
         first_name: document.getElementById('firstName').value.trim(),
         last_name: document.getElementById('lastName').value.trim(),
+        source: LEAD_SOURCE,
         gclid: trackingParams.gclid,
         utm_source: trackingParams.utm_source,
         utm_medium: trackingParams.utm_medium,
@@ -381,6 +389,7 @@
         utm_content: trackingParams.utm_content
       });
       klaviyo.track('Submitted Lead Form', {
+        source: LEAD_SOURCE,
         gclid: trackingParams.gclid,
         utm_source: trackingParams.utm_source,
         utm_medium: trackingParams.utm_medium,
@@ -432,6 +441,7 @@
                       first_name: firstName,
                       last_name: lastName,
                       properties: {
+                        source: LEAD_SOURCE,
                         gclid: trackingParams.gclid,
                         utm_source: trackingParams.utm_source,
                         utm_medium: trackingParams.utm_medium,

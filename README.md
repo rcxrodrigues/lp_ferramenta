@@ -279,6 +279,27 @@ automaticamente sempre que o script da Klaviyo estiver carregado (via
 `snippets/head-code.js`), com uma checagem (`typeof klaviyo === 'undefined'`)
 que evita erro caso você troque de plataforma de rastreamento no futuro.
 
+## Marcar leads com uma tag (source) na Klaviyo
+
+A Klaviyo não tem "tag" de perfil como o Mailchimp — o equivalente é uma
+**propriedade customizada** no perfil, combinada com um **Segmento** que
+filtra por ela. Todo lead que se cadastra por essa página já chega na
+Klaviyo com a propriedade `source` = `toolvo-lp` (definida na constante
+`LEAD_SOURCE` no `index.html`, perto de `trackingParams`).
+
+Pra transformar isso numa "tag" de verdade dentro da Klaviyo:
+
+1. No menu, vá em **Lists & Segments → Create List/Segment → Segment**.
+2. Adicione a condição **"What someone has done" → "Properties about
+   someone" → propriedade `source` → "is" → valor `toolvo-lp"`**.
+3. Salve com um nome tipo "TOOLVO — Drill UK LP". Esse segmento se
+   atualiza sozinho conforme novos leads chegam com essa propriedade — dá
+   pra usar em flows, campanhas e relatórios, exatamente como uma tag.
+
+Se um dia você tiver mais de uma landing page usando a mesma conta
+Klaviyo, é só mudar o valor de `LEAD_SOURCE` no `index.html` de cada uma
+(ex: `'toolvo-lp-furadeira'`, `'toolvo-lp-serra'`) pra diferenciá-las.
+
 ## Rastreamento de lead e compra para o Google Ads
 
 Como o modelo é cupom/redirecionamento (a compra acontece no site do
